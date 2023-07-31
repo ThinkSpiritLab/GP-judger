@@ -34,6 +34,7 @@ export async function dockerSpawn(
     option: SpawnOption
 ): Promise<DockerProcess> {
     const cidPath = path.join(os.tmpdir(), Math.random().toString());
+
     const basicOption = {
         stdio: option.stdio,
     };
@@ -53,7 +54,7 @@ export async function dockerSpawn(
     if (option.memoryLimit) {
         dockerArgs.push(`--memory=${option.memoryLimit}`);
         dockerArgs.push(`--memory-swap=${option.memoryLimit}`);
-        dockerArgs.push("--memory-swappiness=0");
+        // dockerArgs.push("--memory-swappiness=0");
     }
     if (option.pidLimit) {
         dockerArgs.push(`--pids-limit=${option.pidLimit}`);
@@ -105,9 +106,10 @@ export async function dockerSpawn(
             await fs.unlink(cidPath);
             return cid;
         } else {
+            logger.warn("cid file empty");
             throw new Error("cid file empty");
         }
-    }, 500);
+    }, 10000);
     const helper = new DockerHelper(process, cid);
     await helper.init();
     Object.assign(process, helper);
